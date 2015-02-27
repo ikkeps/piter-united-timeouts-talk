@@ -1,0 +1,75 @@
+Таймауты в хайлоаде
+История одного бага
+27 Feb 2015
+
+Александр Неганов
+Go developer, PropellerAds
+ikkeps@gmail.com
+http://github.com/ikkeps
+@ikkeps
+
+* Немного теории
+- rps
+- roundtrip / latency
+- concurrency
+Что из этого важно зависит от того что вы делаете.
+
+* Таймауты важны
+
+- внешние требования
+- API
+- Простой Fault-tolerance
+- connection/memory leak - рост в T/t раз
+
+* Простой способ
+
+.play timeout_simple.go /START OMIT/,/END OMIT/
+
+* Наш случай
+
+- Миллиард запросов в сутки
+- MySQL
+- Кэширование
+Но в один момент что-то пошло не так...
+
+- Запрос в MySQL обрабатывался минуты
+- API не отвечало на запросы
+
+* Что мы пробовали?
+
+- TCP keepalive?
+- Таймауты в БД (max_statement_time, wait_timeout)
+- Несколько дней написания минимального test-case с разным concurrency, разными запросами...
+- Wireshark
+
+* Баг в драйвере MySQL
+
+.image thatguy.png
+
+* Баги могут быть и в реализации протоколов
+
+- Ждем данных которые не придут
+- Соединение разорвано, мы об этом не знаем
+- Локи в неподходящих местах
+
+* И даже хуже...
+
+.code cache.go
+
+* Свой Dialer
+
+MySQL
+
+.code dialers.go /MYSQL OMIT/,/ENDMYSQL OMIT/
+
+net/http
+
+.code dialers.go /HTTP OMIT/,/ENDHTTP OMIT/
+
+* Checklist
+
+- TCP keepalive
+- Таймауты соединений
+- Свой Dialer
+- Отвечать ASAP
+- Обернуть Conn
