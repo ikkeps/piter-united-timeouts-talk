@@ -1,4 +1,4 @@
-func getData(key string) string{
+func getDataCached(key string) string{
     cache.lock.RLock()
     data, ok := cache.items[key]
     cache.lock.RUnlock()

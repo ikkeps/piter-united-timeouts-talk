@@ -37,7 +37,7 @@ http://github.com/ikkeps
 
 * Что мы пробовали?
 
-- TCP keepalive?
+- TCP keepalive? (В Go net только SetKeepAlivePeriod)
 - Таймауты в БД (max_statement_time, wait_timeout)
 - Несколько дней написания минимального test-case с разным concurrency, разными запросами...
 - Wireshark
@@ -46,11 +46,15 @@ http://github.com/ikkeps
 
 .image thatguy.png
 
-* Баги могут быть и в реализации протоколов
+* Баги могут быть и в реализации протоколов и в БД
 
 - Ждем данных которые не придут
 - Соединение разорвано, мы об этом не знаем
 - Локи в неподходящих местах
+см
+
+.link https://github.com/go-sql-driver/mysql/issues/285
+.link https://bugs.launchpad.net/percona-server/+bug/1388533
 
 * И даже хуже...
 
@@ -68,8 +72,10 @@ net/http
 
 * Checklist
 
+- Общий таймаут в горутине
 - TCP keepalive
 - Таймауты соединений
 - Свой Dialer
 - Отвечать ASAP
-- Обернуть Conn
+- Обернуть Conn для отладки
+- Поиграться c настройками сокета/соединения (write buffer, read deadline...)
